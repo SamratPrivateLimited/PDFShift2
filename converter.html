@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>PDF to Audio Converter</title>
+    <style>
+        #convertBtn{
+            height: 30px;
+            width: 150px;
+            border-radius: 20px;
+            color: white;
+            background-color: rebeccapurple;
+            font-size: 15px;
+        }
+
+        #pdfInput{
+            background-color: #c931dccf;
+            height: 25px;
+            width: 220px;
+            color: #000;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 5px;
+            border: 2px solid #742074;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>PDF to Audio Converter</h1>
+    <input type="file" id="pdfInput" accept=".pdf">
+    <button id="convertBtn">Convert to Audio</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+    <script>
+        // Function to convert text to speech
+        function textToSpeech(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        }
+
+        // Function to handle PDF file input
+        document.getElementById('convertBtn').addEventListener('click', async function () {
+            const pdfInput = document.getElementById('pdfInput');
+            const selectedFile = pdfInput.files[0];
+
+            if (selectedFile) {
+                const fileReader = new FileReader();
+                fileReader.onload = async function (event) {
+                    const pdfData = new Uint8Array(event.target.result);
+                    const pdf = await pdfjsLib.getDocument({ data: pdfData }).promise;
+
+                    let pdfText = '';
+
+                    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const pageText = await page.getTextContent();
+                        pageText.items.forEach(item => {
+                            pdfText += item.str + ' ';
+                        });
+                    }
+
+                    textToSpeech(pdfText);
+                };
+
+                fileReader.readAsArrayBuffer(selectedFile);
+            }
+        });
+    </script>
+</body>
+
+</html>
